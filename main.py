@@ -1,48 +1,54 @@
+import pprint
 import feedparser
+import xml.etree.ElementTree as ET
+import json
+
+import rss
 
 
-# Function to fetch the rss feed and return the parsed RSS 
-def parseRSS(rss_url):
-	return feedparser.parse(rss_url)
-	
+class Website():
+	def __init__(self, title, url, keys=[]):
+		self.title = title
+		self.url = url
+		self.keys = keys
+		
 # Function grabs the rss feed headlines(titles) and returns them as a list
 def getHeadlines(rss_url):
 	headlines = []
 	
-	feed = parseRSS(rss_url)
-	
-	print(feed)
-	print(feed['items'])
+	feed = feedparser.parse(rss_url)
+
 	for newsitem in feed['items'] :
-		headlines.append(newsitem['title'])
-	    
-		print(newsitem['title'])
-		print(newsitem['link'])
-		print(newsitem['author'])
-		print(newsitem['published'])
-		
+		headlines.append(newsitem['title'])    
+
 	return headlines
+	
+#def getRSS():
+	
 
 if __name__ == '__main__' :
 
+	with open('config.json') as json_data_files:
+		newsurls = json.load(json_data_files)
+	
 	#A list to hold all headlines
 	allheadlines = []
-
-	newsurls = {
-	#   'apnews':           'http://hosted2.ap.org/atom/APDEFAULT/3d281c11a96b4ad082fe88aa0db04305',
-	#	'googlenews':       'https://news.google.com/news/rss/?hl=en&amp;ned=us&amp;gl=US',
-	#   'yahoonews':        'http://news.yahoo.com/rss/'
-		'postscapes' : 'https://www.postscapes.com/internet-of-things-news/',
-		'ietfjournal' : 'https://www.ietfjournal.org/feed'
-	}
-
+	
+	listItem = []
+	for item in newsurls['website'].items():
+		i = item[1]
+		if not i['shutdown']:
+			if i['feed']:
+				listItem.append(Website(item[0],i['url']))
+			else:
+				listItem.append(Website(item[0],i['url'],i['attr']))
+					
 	# Iterate over the feed urls
-	for key,url in newsurls.items():
+	for key,url in newsurls['website'].items():
 		# Call getHeadlines() and combine the returned headlines with allheadlines
 		allheadlines.extend(getHeadlines(url))
 	 
 	# Iterate over the allheadlines list and print each headline
 	for hl in allheadlines:
 		print(hl)
-		
-	
+
